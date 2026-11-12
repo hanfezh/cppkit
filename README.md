@@ -48,17 +48,12 @@ ctest --test-dir build -R SpanCopy
 
 ## std::span conformance tests
 
-`tests/span_test.cpp` also contains tests for `std::span` features that
-`mstd::span` doesn't implement yet. They are off by default because they
-don't compile until those features exist. Turn them on to use them as a
-to-do list:
-
-```sh
-cmake -S . -B build -DCPPKIT_SPAN_CONFORMANCE=ON
-cmake --build build
-```
-
-Switch back with `-DCPPKIT_SPAN_CONFORMANCE=OFF`.
+The `SpanConformance` tests in `tests/span_test.cpp` cover `std::span`
+behaviour that `mstd::span` doesn't implement yet, including constructor
+constraints that let invalid conversions (such as `span<Base>` over
+`Derived` objects) compile. They are built by default, so the test build
+fails until `mstd::span` implements those features. Use the compiler
+errors as a to-do list.
 
 ## Adding a test file
 

@@ -3,10 +3,8 @@
 // Build & run (from the repo root):
 //   cmake -S . -B build && cmake --build build && ctest --test-dir build
 //
-// The default build tests the API mstd::span has today. Configure with
-// -DCPPKIT_SPAN_CONFORMANCE=ON to also compile the checks for std::span
-// behaviour that mstd::span doesn't have yet (they fail to compile or fail
-// at runtime until it does).
+// The SpanConformance tests check std::span behaviour that mstd::span doesn't
+// have yet; they fail to compile or fail at runtime until it does.
 
 #include <mstd/span.hpp>
 
@@ -235,11 +233,8 @@ TEST(SpanTraits, ConstSpanRejectsWrites) {
 }
 
 // ---------------------------------------------------------------------------
-// std::span conformance gaps (see the review). Enable with
-// -DCPPKIT_SPAN_CONFORMANCE=ON.
+// std::span conformance
 // ---------------------------------------------------------------------------
-
-#ifdef MSTD_SPAN_CONFORMANCE
 
 struct Base {
   int x;
@@ -276,6 +271,50 @@ TEST(SpanConformance, RejectsDerivedToBase) {
   // garbage; std::span only allows qualification conversions (T -> const T).
   static_assert(
       !std::is_constructible_v<mstd::span<Base>, std::vector<Derived>&>);
+  static_assert(!std::is_constructible_v<mstd::span<Base>, Derived (&)[3]>);
+  static_assert(!std::is_constructible_v<mstd::span<Base>, Derived*,
+                                         std::size_t>);
+}
+
+TEST(SpanConformance, RejectsUnrelatedElementTypes) {
+  static_assert(!std::is_constructible_v<mstd::span<int>, std::vector<long>&>);
+  static_assert(
+      !std::is_constructible_v<mstd::span<int>, std::vector<unsigned>&>);
+}
+
+TEST(SpanConformance, RejectsDroppingConst) {
+  static_assert(
+      !std::is_constructible_v<mstd::span<int>, const std::vector<int>&>);
+  static_assert(
+      !std::is_constructible_v<mstd::span<int>, mstd::span<const int>&>);
+  static_assert(
+      !std::is_convertible_v<const std::array<int, 3>&, mstd::span<int>>);
+}
+
+// Has data() and size() but no begin()/end(), so it isn't a contiguous range.
+struct DataAndSizeOnly {
+  int* data();
+  std::size_t size();
+};
+
+TEST(SpanConformance, RejectsNonRanges) {
+  static_assert(!std::is_constructible_v<mstd::span<int>, DataAndSizeOnly&>);
+  static_assert(!std::is_convertible_v<DataAndSizeOnly&, mstd::span<int>>);
+}
+
+TEST(SpanConformance, ConstSpanFromTemporary) {
+  auto sum = [](mstd::span<const int> s) {
+    int total = 0;
+    for (int x : s) total += x;
+    return total;
+  };
+  EXPECT_EQ(sum(std::vector<int>{1, 2, 3}), 6);
+}
+
+TEST(SpanConformance, MutableSpanRejectsTemporary) {
+  // A mutable view of a temporary would dangle and invites writes that are
+  // silently lost; std::span only binds rvalues for const element types.
+  static_assert(!std::is_constructible_v<mstd::span<int>, std::vector<int>&&>);
 }
 
 TEST(SpanConformance, Constexpr) {
@@ -324,7 +363,5 @@ TEST(SpanConformance, ReverseIteration) {
   std::vector<int> seen(s.rbegin(), s.rend());
   EXPECT_EQ(seen, (std::vector<int>{3, 2, 1}));
 }
-
-#endif  // MSTD_SPAN_CONFORMANCE
 
 }  // namespace

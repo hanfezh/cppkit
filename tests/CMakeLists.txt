@@ -14,10 +14,6 @@ FetchContent_MakeAvailable(googletest)
 
 include(GoogleTest)
 
-# Enable the tests for std::span behaviour mstd::span doesn't have yet. They
-# fail to compile until the features exist.
-option(CPPKIT_SPAN_CONFORMANCE "Build std::span conformance tests" OFF)
-
 function(cppkit_add_test name)
   add_executable(${name} ${name}.cpp)
   target_link_libraries(${name} PRIVATE cppkit::mstd GTest::gtest_main)
@@ -28,6 +24,3 @@ function(cppkit_add_test name)
 endfunction()
 
 cppkit_add_test(span_test)
-if(CPPKIT_SPAN_CONFORMANCE)
-  target_compile_definitions(span_test PRIVATE MSTD_SPAN_CONFORMANCE)
-endif()
