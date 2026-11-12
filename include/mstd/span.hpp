@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstddef>
+#include <ranges>
+#include <type_traits>
 
 namespace mstd {
 
@@ -9,6 +11,9 @@ class span {
  public:
   using iterator = T*;
   using reference = T&;
+
+  // default constructor
+  span() : data_(nullptr), size_(0) {}
 
   template <class Container>
   span(Container& c) : data_(c.data()), size_(c.size()) {}
@@ -31,5 +36,9 @@ class span {
   T* data_;
   size_t size_;
 };
+
+// Deduction guide
+template <class R>
+span(R&&) -> span<std::remove_reference_t<std::ranges::range_reference_t<R>>>;
 
 }  // namespace mstd
