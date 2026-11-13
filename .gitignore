@@ -1,0 +1,6 @@
+# Build output
+/build/
+/Testing/
+
+# Editor / tooling
+tags
