@@ -7,6 +7,10 @@
 // the previous. Until mstd::shared_ptr has a feature, its tests fail to
 // compile; build only the span tests meanwhile with
 //   cmake --build build --target span_test
+//
+// The weak_ptr tests are off by default. Turn them on once mstd::weak_ptr
+// exists with
+//   cmake -S . -B build -DCPPKIT_TEST_WEAK_PTR=ON
 
 #include <mstd/shared_ptr.hpp>
 
@@ -379,7 +383,11 @@ TEST(SharedPtrConvert, AliasingConstructorSharesOwnership) {
 
 // ---------------------------------------------------------------------------
 // 7. weak_ptr: observing without owning
+//
+// Enable with -DCPPKIT_TEST_WEAK_PTR=ON.
 // ---------------------------------------------------------------------------
+
+#ifdef MSTD_TEST_WEAK_PTR
 
 TEST(WeakPtr, DefaultIsExpired) {
   mstd::weak_ptr<int> w;
@@ -458,6 +466,8 @@ TEST(WeakPtr, BreaksReferenceCycle) {
   EXPECT_EQ(destroyed, 2);
 }
 
+#endif  // MSTD_TEST_WEAK_PTR
+
 // ---------------------------------------------------------------------------
 // 8. Thread safety of the reference count
 // ---------------------------------------------------------------------------
@@ -489,6 +499,8 @@ TEST(SharedPtrThreads, ConcurrentCopiesKeepCountExact) {
   EXPECT_EQ(destroyed, 1);
 }
 
+#ifdef MSTD_TEST_WEAK_PTR
+
 TEST(SharedPtrThreads, ConcurrentLockAndReset) {
   // Threads keep trying weak_ptr::lock() while the main thread drops the last
   // owner: every lock either gets the live object or an empty pointer, and
@@ -512,5 +524,7 @@ TEST(SharedPtrThreads, ConcurrentLockAndReset) {
     EXPECT_EQ(destroyed, 1);
   }
 }
+
+#endif  // MSTD_TEST_WEAK_PTR
 
 }  // namespace

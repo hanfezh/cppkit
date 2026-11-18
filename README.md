@@ -55,6 +55,19 @@ constraints that let invalid conversions (such as `span<Base>` over
 fails until `mstd::span` implements those features. Use the compiler
 errors as a to-do list.
 
+## weak_ptr tests
+
+The `mstd::weak_ptr` tests in `tests/shared_ptr_test.cpp` are off by
+default, because `weak_ptr` comes after `shared_ptr`. Turn them on once it
+exists:
+
+```sh
+cmake -S . -B build -DCPPKIT_TEST_WEAK_PTR=ON
+cmake --build build
+```
+
+Switch back with `-DCPPKIT_TEST_WEAK_PTR=OFF`.
+
 ## Adding a test file
 
 Create `tests/<name>_test.cpp`, then register it in `tests/CMakeLists.txt`:
