@@ -93,6 +93,12 @@ class shared_ptr {
     }
   }
 
+  // Move constructor
+  shared_ptr(shared_ptr&& r) : ptr_(r.ptr_), cb_(r.cb_) {
+    r.ptr_ = nullptr;
+    r.cb_ = nullptr;
+  }
+
   template <class U>
     requires std::is_convertible_v<U*, T*>
   shared_ptr(const shared_ptr<U>& r) : ptr_(r.ptr_), cb_(r.cb_) {
