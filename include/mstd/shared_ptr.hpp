@@ -9,10 +9,19 @@ class ctrl_base {
  public:
   void increase() { count_++; }
 
+  void release() {
+    if (--count_ == 0) {
+      destroy();
+    }
+  }
+
+  long use_count() const { return count_; }
+
+ protected:
   virtual void destroy() = 0;
 
  protected:
-  size_t count_ = 0;
+  long count_ = 1;
 };
 
 template <class T>
@@ -38,7 +47,7 @@ class ctrl_inplace : public ctrl_base {
   }
 
   void destroy() override {
-    delete get()->~T();
+    get()->~T();
     delete this;
   }
 
@@ -53,12 +62,9 @@ class shared_ptr {
  public:
   shared_ptr() = default;
 
-  shared_ptr(std::nullptr_t) = default;
+  shared_ptr(std::nullptr_t) {}
 
-  shared_ptr(T* p) {
-    cb_ = new ctrl_ptr(p);
-    ptr_(p);
-  }
+  shared_ptr(T* p) : ptr_(p) { cb_ = new ctrl_ptr(p); }
 
   shared_ptr(const shared_ptr<T>& p) : cb_(p.cb_), ptr_(p.ptr_) {
     cb_->increase();
@@ -68,11 +74,17 @@ class shared_ptr {
 
   ~shared_ptr() {
     if (cb_ != nullptr) {
-      cb_->destroy();
+      cb_->release();
     }
   }
 
+  long use_count() const { return cb_ != nullptr ? cb_->use_count() : 0; }
+
   T* get() const { return ptr_; }
+
+  T* operator->() const { return ptr_; }
+
+  T& operator*() const { return *ptr_; }
 
  private:
   ctrl_base* cb_ = nullptr;
