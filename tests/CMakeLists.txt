@@ -24,3 +24,4 @@ function(cppkit_add_test name)
 endfunction()
 
 cppkit_add_test(span_test)
+cppkit_add_test(shared_ptr_test)
