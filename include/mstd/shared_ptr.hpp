@@ -119,6 +119,10 @@ class shared_ptr {
     return *this;
   }
 
+  friend bool operator==(const shared_ptr& a, const shared_ptr& b) {
+    return a.get() == b.get();
+  }
+
  private:
   T* ptr_ = nullptr;
   ctrl_base* cb_ = nullptr;
