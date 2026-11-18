@@ -27,17 +27,25 @@ class ctrl_base {
 };
 
 template <class T>
+struct default_delete {
+  void operator()(T* p) const { delete p; }
+};
+
+template <class T, class D = default_delete<T>>
 class ctrl_ptr : public ctrl_base {
  public:
   ctrl_ptr(T* p) : ptr_(p) {}
 
+  ctrl_ptr(T* p, D d) : ptr_(p), deleter_(d) {}
+
   void destroy() override {
-    delete ptr_;
+    deleter_(ptr_);
     delete this;
   }
 
  private:
   T* ptr_ = nullptr;
+  D deleter_;
 };
 
 template <class T>
@@ -66,7 +74,12 @@ class shared_ptr {
 
   shared_ptr(std::nullptr_t) {}
 
-  explicit shared_ptr(T* ptr) : ptr_(ptr) { cb_ = new ctrl_ptr(ptr); }
+  explicit shared_ptr(T* ptr) : ptr_(ptr) { cb_ = new ctrl_ptr<T>(ptr); }
+
+  template <class Deleter>
+  shared_ptr(T* ptr, Deleter d) : ptr_(ptr) {
+    cb_ = new ctrl_ptr<T, Deleter>(ptr, d);
+  }
 
   // Copy constructor
   shared_ptr(const shared_ptr& r) : ptr_(r.ptr_), cb_(r.cb_) {
