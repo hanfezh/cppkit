@@ -68,8 +68,11 @@ class shared_ptr {
 
   explicit shared_ptr(T* ptr) : ptr_(ptr) { cb_ = new ctrl_ptr(ptr); }
 
-  shared_ptr(const shared_ptr<T>& r) : ptr_(r.ptr_), cb_(r.cb_) {
-    cb_->increase();
+  // Copy constructor
+  shared_ptr(const shared_ptr& r) : ptr_(r.ptr_), cb_(r.cb_) {
+    if (cb_ != nullptr) {
+      cb_->increase();
+    }
   }
 
   shared_ptr(ctrl_base* cb, T* ptr) : ptr_(ptr), cb_(cb) {}
@@ -98,7 +101,7 @@ class shared_ptr {
     cb_ = new ctrl_ptr(ptr);
   }
 
-  void swap(shared_ptr<T>& r) {
+  void swap(shared_ptr& r) {
     std::swap(ptr_, r.ptr_);
     std::swap(cb_, r.cb_);
   }
@@ -108,6 +111,13 @@ class shared_ptr {
   T& operator*() const { return *ptr_; }
 
   explicit operator bool() const { return ptr_ != nullptr; }
+
+  // Copy assignment
+  shared_ptr& operator=(const shared_ptr& r) {
+    shared_ptr copy(r);
+    swap(copy);
+    return *this;
+  }
 
  private:
   T* ptr_ = nullptr;
