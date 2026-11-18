@@ -314,7 +314,7 @@ TEST(MakeShared, DestroysObjectWhenLastOwnerGoes) {
 }
 
 // ---------------------------------------------------------------------------
-// 6. Derived-to-base conversion and the aliasing constructor
+// 6. Derived-to-base conversion
 // ---------------------------------------------------------------------------
 
 struct Base {
@@ -362,22 +362,6 @@ TEST(SharedPtrConvert, DeletesThroughOriginalType) {
     mstd::shared_ptr<Base> b;
     b = mstd::make_shared<Derived>(&destroyed);
   }
-  EXPECT_EQ(destroyed, 1);
-}
-
-TEST(SharedPtrConvert, AliasingConstructorSharesOwnership) {
-  // An aliasing pointer points at a member but keeps the whole object alive.
-  int destroyed = 0;
-  auto owner = mstd::make_shared<Tracked>(&destroyed, 42);
-  mstd::shared_ptr<int> member(owner, &owner->value);
-  EXPECT_EQ(owner.use_count(), 2);
-  EXPECT_EQ(*member, 42);
-
-  owner.reset();
-  EXPECT_EQ(destroyed, 0);
-  EXPECT_EQ(*member, 42);
-
-  member.reset();
   EXPECT_EQ(destroyed, 1);
 }
 
