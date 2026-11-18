@@ -7,6 +7,8 @@ namespace mstd {
 
 class ctrl_base {
  public:
+  virtual ~ctrl_base() = default;
+
   void increase() { count_++; }
 
   void release() {
@@ -64,13 +66,13 @@ class shared_ptr {
 
   shared_ptr(std::nullptr_t) {}
 
-  explicit shared_ptr(T* p) : ptr_(p) { cb_ = new ctrl_ptr(p); }
+  explicit shared_ptr(T* ptr) : ptr_(ptr) { cb_ = new ctrl_ptr(ptr); }
 
-  shared_ptr(const shared_ptr<T>& p) : cb_(p.cb_), ptr_(p.ptr_) {
+  shared_ptr(const shared_ptr<T>& r) : ptr_(r.ptr_), cb_(r.cb_) {
     cb_->increase();
   }
 
-  shared_ptr(ctrl_base* cb, T* p) : cb_(cb), ptr_(p) {}
+  shared_ptr(ctrl_base* cb, T* ptr) : ptr_(ptr), cb_(cb) {}
 
   ~shared_ptr() {
     if (cb_ != nullptr) {
@@ -82,6 +84,25 @@ class shared_ptr {
 
   T* get() const { return ptr_; }
 
+  void reset() {
+    if (cb_ != nullptr) {
+      cb_->release();
+      cb_ = nullptr;
+      ptr_ = nullptr;
+    }
+  }
+
+  void reset(T* ptr) {
+    reset();
+    ptr_ = ptr;
+    cb_ = new ctrl_ptr(ptr);
+  }
+
+  void swap(shared_ptr<T>& r) {
+    std::swap(ptr_, r.ptr_);
+    std::swap(cb_, r.cb_);
+  }
+
   T* operator->() const { return ptr_; }
 
   T& operator*() const { return *ptr_; }
@@ -89,8 +110,8 @@ class shared_ptr {
   explicit operator bool() const { return ptr_ != nullptr; }
 
  private:
-  ctrl_base* cb_ = nullptr;
   T* ptr_ = nullptr;
+  ctrl_base* cb_ = nullptr;
 };
 
 template <class T, class... Args>
