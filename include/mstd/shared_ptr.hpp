@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <type_traits>
 #include <utility>
 
 namespace mstd {
@@ -69,6 +70,10 @@ class ctrl_inplace : public ctrl_base {
 
 template <class T>
 class shared_ptr {
+ private:
+  template <class U>
+  friend class shared_ptr;
+
  public:
   shared_ptr() = default;
 
@@ -83,6 +88,14 @@ class shared_ptr {
 
   // Copy constructor
   shared_ptr(const shared_ptr& r) : ptr_(r.ptr_), cb_(r.cb_) {
+    if (cb_ != nullptr) {
+      cb_->increase();
+    }
+  }
+
+  template <class U>
+    requires std::is_convertible_v<U*, T*>
+  shared_ptr(const shared_ptr<U>& r) : ptr_(r.ptr_), cb_(r.cb_) {
     if (cb_ != nullptr) {
       cb_->increase();
     }
