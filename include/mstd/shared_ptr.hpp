@@ -64,7 +64,7 @@ class shared_ptr {
 
   shared_ptr(std::nullptr_t) {}
 
-  shared_ptr(T* p) : ptr_(p) { cb_ = new ctrl_ptr(p); }
+  explicit shared_ptr(T* p) : ptr_(p) { cb_ = new ctrl_ptr(p); }
 
   shared_ptr(const shared_ptr<T>& p) : cb_(p.cb_), ptr_(p.ptr_) {
     cb_->increase();
@@ -85,6 +85,8 @@ class shared_ptr {
   T* operator->() const { return ptr_; }
 
   T& operator*() const { return *ptr_; }
+
+  explicit operator bool() const { return ptr_ != nullptr; }
 
  private:
   ctrl_base* cb_ = nullptr;
