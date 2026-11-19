@@ -151,6 +151,12 @@ class shared_ptr {
     return *this;
   }
 
+  // Move assignment
+  shared_ptr& operator=(shared_ptr&& r) {
+    shared_ptr(std::move(r)).swap(*this);
+    return *this;
+  }
+
   friend bool operator==(const shared_ptr& a, const shared_ptr& b) {
     return a.get() == b.get();
   }
