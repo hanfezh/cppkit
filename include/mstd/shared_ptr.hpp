@@ -81,6 +81,12 @@ class shared_ptr {
 
   explicit shared_ptr(T* ptr) : ptr_(ptr) { cb_ = new ctrl_ptr<T>(ptr); }
 
+  template <class U>
+    requires std::is_convertible_v<U*, T*>
+  explicit shared_ptr(U* ptr) : ptr_(ptr) {
+    cb_ = new ctrl_ptr<U>(ptr);
+  }
+
   template <class Deleter>
   shared_ptr(T* ptr, Deleter d) : ptr_(ptr) {
     cb_ = new ctrl_ptr<T, Deleter>(ptr, d);
