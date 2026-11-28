@@ -3,8 +3,8 @@
 // Build & run (from the repo root):
 //   cmake -S . -B build && cmake --build build && ctest --test-dir build
 //
-// The SpanConformance tests check std::span behaviour that mstd::span doesn't
-// have yet; they fail to compile or fail at runtime until it does.
+// The SpanConformance tests check that mstd::span behaves like std::span.
+// Many are static_asserts, so a regression shows up as a build error.
 
 #include <mstd/span.hpp>
 

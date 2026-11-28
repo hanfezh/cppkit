@@ -24,3 +24,10 @@ function(cppkit_add_test name)
 endfunction()
 
 cppkit_add_test(span_test)
+cppkit_add_test(shared_ptr_test)
+
+# The weak_ptr tests need mstd::weak_ptr, which comes after shared_ptr.
+option(CPPKIT_TEST_WEAK_PTR "Build the mstd::weak_ptr tests" OFF)
+if(CPPKIT_TEST_WEAK_PTR)
+  target_compile_definitions(shared_ptr_test PRIVATE MSTD_TEST_WEAK_PTR)
+endif()

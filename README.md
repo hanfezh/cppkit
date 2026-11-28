@@ -48,12 +48,24 @@ ctest --test-dir build -R SpanCopy
 
 ## std::span conformance tests
 
-The `SpanConformance` tests in `tests/span_test.cpp` cover `std::span`
-behaviour that `mstd::span` doesn't implement yet, including constructor
-constraints that let invalid conversions (such as `span<Base>` over
-`Derived` objects) compile. They are built by default, so the test build
-fails until `mstd::span` implements those features. Use the compiler
-errors as a to-do list.
+The `SpanConformance` tests in `tests/span_test.cpp` check that
+`mstd::span` behaves like `std::span`, including constructor constraints
+that reject invalid conversions (such as `span<Base>` over `Derived`
+objects). Many of them are compile-time checks, so a regression shows up
+as a build error rather than a failing test.
+
+## weak_ptr tests
+
+The `mstd::weak_ptr` tests in `tests/shared_ptr_test.cpp` are off by
+default, because `weak_ptr` comes after `shared_ptr`. Turn them on once it
+exists:
+
+```sh
+cmake -S . -B build -DCPPKIT_TEST_WEAK_PTR=ON
+cmake --build build
+```
+
+Switch back with `-DCPPKIT_TEST_WEAK_PTR=OFF`.
 
 ## Adding a test file
 
