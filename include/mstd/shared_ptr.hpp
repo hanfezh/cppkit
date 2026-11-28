@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <cstddef>
 #include <type_traits>
 #include <utility>
@@ -24,7 +25,7 @@ class ctrl_base {
   virtual void destroy() = 0;
 
  protected:
-  long count_ = 1;
+  std::atomic<long> count_ = 1;
 };
 
 template <class T>
